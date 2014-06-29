@@ -1,15 +1,15 @@
-#lang scribble/doc
-@(require scribble/manual
-          (for-label racket)
+#lang scribble/manual
+@(require (for-label racket)
           (for-label "../main.rkt"))
 
 @title{@bold{OpenAL}: Bindings for the OpenAL sound library}
 @author{gcr}
 
 @(define openal-programmers-guide
-   (hyperlink "http://connect.creativelabs.com/openal/Documentation/OpenAL_Programmers_Guide.pdf" "OpenAL Programmer's Guide"))
+   (hyperlink "http://jerli.info/docu/Master_1/Son/OpenAL_Programmers_Guide.pdf"
+              "OpenAL Programmer's Guide"))
 
-@defmodule[main]{
+@defmodule[libopenal-racket]{
   This library provides low-level bindings for the OpenAL sound library.
   Because these bindings are low-level, you may want to look at the
   @openal-programmers-guide to get a sense of how it works.
@@ -63,7 +63,8 @@ In this example, each unsigned byte of @racket[sinewave] is a separate
 to use 16-bit samples, but this grainy, ugly example is fine for us.
 
 Once our data is safe in an OpenAL buffer, we make a source and play
-it. Note that OpenAL internally copies that data -- we are free to mutate it however we like after the call to @racket[buffer-data].
+it. Note that OpenAL internally copies that data -- we are free to mutate
+it however we like after the call to @racket[buffer-data].
 
 @codeblock{
 ;; Make our OpenAL source
@@ -276,8 +277,19 @@ some platforms may get confused.
 Opens an OpenAL device. Pass @racket[#f] to just use the default device.
 }
 
-@defproc[(close-device! [device any/c]) bool?]{
+@defproc[(open-capture-device [devicename (or/c string? #f)]
+                              [frequency integer?]
+                              [format integer?]
+                              [buffersize integer?]) any/c]{
+Opens an OpenAL capture device. Pass @racket[#f] to just use the default device.
+}
+
+@defproc[(close-device! [device any/c]) boolean?]{
 Closes an OpenAL device.
+}
+
+@defproc[(close-capture-device! [device any/c]) boolean?]{
+Closes an OpenAL capture device.
 }
 
 @defproc[(create-context [device any/c]) any/c]{
@@ -305,6 +317,20 @@ using this without reinstating another device context.
 
 @defproc[(get-last-error) exact-integer?]{
 Returns (and clears) OpenAL's last error. Will be 0 if there are no errors.
+}
+
+@defproc[(capture-start [device any/c]) void?]{
+Begin a capture operation using @racket[device].
+}
+
+@defproc[(capture-stop [device any/c]) void?]{
+Stop a capture operation on @racket[device].
+}
+
+@defproc[(capture-samples [device any/c]
+                          [buffer bytes?]
+                          [samples integer?]) void?]{
+Complete a capture operation, this does not block.
 }
 
 @section{Buffers}
@@ -358,39 +384,83 @@ can reuse or mutate @racket[data] however you like after this call.
 @subsection{Buffer properties}
 @subsubsection{C-level buffer getters and setters}
 
-@defproc[(alBufferf [buffer exact-integer?] [param exact-integer?] [value real?]) any/c]{Sets the given @racket[param] of the given @racket[buffer] to the given @racket[value].}
-@defproc[(alBuffer3f [buffer exact-integer?] [param exact-integer?] [value1 real?][value2 real?][value3 real?]) any/c]{Sets the given @racket[param] of the given @racket[buffer] to the given values.}
+@defproc[(alBufferf [buffer exact-integer?]
+                    [param exact-integer?]
+                    [value real?]) any/c]{
+Sets the given @racket[param] of the given @racket[buffer] to the given @racket[value].
+}
+
+@defproc[(alBuffer3f [buffer exact-integer?]
+                     [param exact-integer?]
+                     [value1 real?] [value2 real?]
+                     [value3 real?]) any/c]{
+Sets the given @racket[param] of the given @racket[buffer] to the given values.
+}
+
 @defproc[(alBufferfv [buffer exact-integer?] [param exact-integer?]
-[values (listof real?)]) any/c]{Sets the given @racket[param] of the given @racket[buffer] to the given @racket[values].}
-@defproc[(alBufferi [buffer exact-integer?] [param exact-integer?] [value exact-integer?]) any/c]{Sets the given @racket[param] of the given @racket[buffer] to the given @racket[value].}
+                     [values (listof real?)]) any/c]{
+Sets the given @racket[param] of the given @racket[buffer] to the given @racket[values].
+}
+
+@defproc[(alBufferi [buffer exact-integer?] [param exact-integer?]
+                    [value exact-integer?]) any/c]{
+Sets the given @racket[param] of the given @racket[buffer] to the given @racket[value].
+}
+
 @defproc[(alBuffer3i [buffer exact-integer?] [param exact-integer?]
-[value1 exact-integer?][value2 exact-integer?][value3 exact-integer?]) any/c]{Sets the given @racket[param] of the given @racket[buffer] to the given values.}
+                     [value1 exact-integer?] [value2 exact-integer?]
+                     [value3 exact-integer?]) any/c]{
+Sets the given @racket[param] of the given @racket[buffer] to the given values.
+}
+
 @defproc[(alBufferiv [buffer exact-integer?] [param exact-integer?]
-[values (listof exact-integer?)]) any/c]{Sets the given @racket[param] of the given @racket[buffer] to the given @racket[values].}
+                     [values (listof exact-integer?)]) any/c]{
+Sets the given @racket[param] of the given @racket[buffer] to the given @racket[values].
+}
 
+@defproc[(alGetBufferf [buffer exact-integer?] [param exact-integer?]) real?]{
+Gets the given @racket[param] of the given @racket[buffer].
+}
 
-@defproc[(alGetBufferf [buffer exact-integer?] [param exact-integer?]) real?]{Gets the given @racket[param] of the given @racket[buffer].}
-@defproc[(alGetBuffer3f [buffer exact-integer?] [param
-exact-integer?]) (list/c real? real? real?)]{Gets the given @racket[param] of the given @racket[buffer].}
-@defproc[(alGetBufferfv [buffer exact-integer?] [param
-exact-integer?]) (listof real?)]{Gets the given @racket[param] of the given @racket[buffer].}
-@defproc[(alGetBufferi [buffer exact-integer?] [param exact-integer?]) exact-integer?]{Gets the given @racket[param] of the given @racket[buffer].}
-@defproc[(alGetBuffer3i [buffer exact-integer?] [param
-exact-integer?]) (list/c exact-integer? exact-integer? exact-integer?)]{Gets the given @racket[param] of the given @racket[buffer].}
-@defproc[(alGetBufferiv [buffer exact-integer?] [param
-exact-integer?]) (listof exact-integer?)]{Gets the given @racket[param] of the given @racket[buffer].}
+@defproc[(alGetBuffer3f [buffer exact-integer?] [param exact-integer?])
+         (list/c real? real? real?)]{
+Gets the given @racket[param] of the given @racket[buffer].
+}
+
+@defproc[(alGetBufferfv [buffer exact-integer?] [param exact-integer?])
+         (listof real?)]{
+Gets the given @racket[param] of the given @racket[buffer].
+}
+
+@defproc[(alGetBufferi [buffer exact-integer?] [param exact-integer?]) exact-integer?]{
+Gets the given @racket[param] of the given @racket[buffer].
+}
+
+@defproc[(alGetBuffer3i [buffer exact-integer?] [param exact-integer?])
+         (list/c exact-integer? exact-integer? exact-integer?)]{
+Gets the given @racket[param] of the given @racket[buffer].
+}
+
+@defproc[(alGetBufferiv [buffer exact-integer?] [param exact-integer?])
+         (listof exact-integer?)]{
+Gets the given @racket[param] of the given @racket[buffer].
+}
 
 @subsubsection{Friendly buffer getters and setters}
+
 @defproc[(buffer-frequency [buffer exact-integer?]) exact-integer?]{
 Retrieves the given @racket[buffer]'s frequency, in Hz.
 }
+
 @defproc[(buffer-bits [buffer exact-integer?]) exact-integer?]{
 Retrieves the given @racket[buffer]'s bit depth.
 }
+
 @defproc[(buffer-channels [buffer exact-integer?]) exact-integer?]{
 Retrieves the number of channels in @racket[buffer] -- 1 for mono, 2
 for stereo.
 }
+
 @defproc[(buffer-size [buffer exact-integer?]) exact-integer?]{
 Retrieves the size of the @racket[buffer] in bytes.
 }
@@ -426,10 +496,12 @@ playing.
 @defproc[(pause-source [source exact-integer?]) any/c]{
 Stops playing the @racket[source].
 }
+
 @defproc[(stop-source [source exact-integer?]) any/c]{
 Stops the @racket[source]. Like @racket[pause-source], but this
 function rewinds it back to the beginning of its buffer.
 }
+
 @defproc[(rewind-source [source exact-integer?]) any/c]{
 Like @racket[stop-source], but additionally sets the source's state to
 @racket[AL_INITIAL]. Your program can use this property to distinguish
@@ -449,27 +521,64 @@ setting the same properties.
 
 @subsubsection{C-like source getters and setters}
 
-@defproc[(alSourcef [source exact-integer?] [param exact-integer?] [value real?]) any/c]{Sets the given @racket[param] of the given @racket[source] to the given @racket[value].}
-@defproc[(alSource3f [source exact-integer?] [param exact-integer?] [value1 real?][value2 real?][value3 real?]) any/c]{Sets the given @racket[param] of the given @racket[source] to the given values.}
+@defproc[(alSourcef [source exact-integer?] [param exact-integer?] [value real?]) any/c]{
+Sets the given @racket[param] of the given @racket[source] to the given @racket[value].
+}
+
+@defproc[(alSource3f [source exact-integer?] [param exact-integer?]
+                     [value1 real?] [value2 real?] [value3 real?]) any/c]{
+Sets the given @racket[param] of the given @racket[source] to the given values.
+}
+
 @defproc[(alSourcefv [source exact-integer?] [param exact-integer?]
-[values (listof real?)]) any/c]{Sets the given @racket[param] of the given @racket[source] to the given @racket[values].}
-@defproc[(alSourcei [source exact-integer?] [param exact-integer?] [value exact-integer?]) any/c]{Sets the given @racket[param] of the given @racket[source] to the given @racket[value].}
+                     [values (listof real?)]) any/c]{
+Sets the given @racket[param] of the given @racket[source] to the given @racket[values].
+}
+
+@defproc[(alSourcei [source exact-integer?] [param exact-integer?]
+                    [value exact-integer?]) any/c]{
+Sets the given @racket[param] of the given @racket[source] to the given @racket[value].
+}
+
 @defproc[(alSource3i [source exact-integer?] [param exact-integer?]
-[value1 exact-integer?][value2 exact-integer?][value3 exact-integer?]) any/c]{Sets the given @racket[param] of the given @racket[source] to the given values.}
+                     [value1 exact-integer?] [value2 exact-integer?]
+                     [value3 exact-integer?]) any/c]{
+Sets the given @racket[param] of the given @racket[source] to the given values.
+}
+
 @defproc[(alSourceiv [source exact-integer?] [param exact-integer?]
-[values (listof exact-integer?)]) any/c]{Sets the given @racket[param] of the given @racket[source] to the given @racket[values].}
+                     [values (listof exact-integer?)]) any/c]{
+Sets the given @racket[param] of the given @racket[source] to the given @racket[values].
+}
 
 
-@defproc[(alGetSourcef [source exact-integer?] [param exact-integer?]) real?]{Gets the given @racket[param] of the given @racket[source].}
-@defproc[(alGetSource3f [source exact-integer?] [param
-exact-integer?]) (list/c real? real? real?)]{Gets the given @racket[param] of the given @racket[source].}
-@defproc[(alGetSourcefv [source exact-integer?] [param
-exact-integer?]) (listof real?)]{Gets the given @racket[param] of the given @racket[source].}
-@defproc[(alGetSourcei [source exact-integer?] [param exact-integer?]) exact-integer?]{Gets the given @racket[param] of the given @racket[source].}
-@defproc[(alGetSource3i [source exact-integer?] [param
-exact-integer?]) (list/c exact-integer? exact-integer? exact-integer?)]{Gets the given @racket[param] of the given @racket[source].}
-@defproc[(alGetSourceiv [source exact-integer?] [param
-exact-integer?]) (listof exact-integer?)]{Gets the given @racket[param] of the given @racket[source].}
+@defproc[(alGetSourcef [source exact-integer?] [param exact-integer?]) real?]{
+Gets the given @racket[param] of the given @racket[source].
+}
+
+@defproc[(alGetSource3f [source exact-integer?] [param exact-integer?])
+         (list/c real? real? real?)]{
+Gets the given @racket[param] of the given @racket[source].
+}
+
+@defproc[(alGetSourcefv [source exact-integer?] [param exact-integer?])
+         (listof real?)]{
+Gets the given @racket[param] of the given @racket[source].
+}
+
+@defproc[(alGetSourcei [source exact-integer?] [param exact-integer?]) exact-integer?]{
+Gets the given @racket[param] of the given @racket[source].
+}
+
+@defproc[(alGetSource3i [source exact-integer?] [param exact-integer?])
+         (list/c exact-integer? exact-integer? exact-integer?)]{
+Gets the given @racket[param] of the given @racket[source].
+}
+
+@defproc[(alGetSourceiv [source exact-integer?] [param exact-integer?])
+         (listof exact-integer?)]{
+Gets the given @racket[param] of the given @racket[source].
+}
 
 @subsubsection{Friendly source getters and setters}
 @deftogether[(
@@ -513,7 +622,8 @@ gain. See the @secref{distance-models} section for more details.
   @defproc[(set-source-max-distance! [source exact-integer?] [value real?]) any/c]
   @defproc[(source-max-distance [source exact-integer?]) real?]
 )]{
-Gets or sets the source's minimum and maximum gain and distance. See the @secref{distance-models} section for more details.
+Gets or sets the source's minimum and maximum gain and distance.
+See the @secref{distance-models} section for more details.
 }
 
 @deftogether[(
@@ -622,28 +732,59 @@ doppler effect.
 
 @subsection{C-like listener getters and setters}
 
-@defproc[(alListenerf [param exact-integer?] [value real?]) any/c]{Sets the given @racket[param] of the listener to the given @racket[value].}
-@defproc[(alListener3f [param exact-integer?] [value1 real?][value2 real?][value3 real?]) any/c]{Sets the given @racket[param] of the listener to the given values.}
-@defproc[(alListenerfv [param exact-integer?]
-[values (listof real?)]) any/c]{Sets the given @racket[param] of the listener to the given @racket[values].}
-@defproc[(alListeneri [param exact-integer?] [value exact-integer?]) any/c]{Sets the given @racket[param] of the listener to the given @racket[value].}
-@defproc[(alListener3i [param exact-integer?]
-[value1 exact-integer?][value2 exact-integer?][value3 exact-integer?]) any/c]{Sets the given @racket[param] of the listener to the given values.}
-@defproc[(alListeneriv [param exact-integer?]
-[values (listof exact-integer?)]) any/c]{Sets the given @racket[param] of the listener to the given @racket[values].}
+@defproc[(alListenerf [param exact-integer?] [value real?]) any/c]{
+Sets the given @racket[param] of the listener to the given @racket[value].
+}
 
+@defproc[(alListener3f [param exact-integer?] [value1 real?]
+                       [value2 real?] [value3 real?]) any/c]{
+Sets the given @racket[param] of the listener to the given values.
+}
 
-@defproc[(alGetListenerf [param exact-integer?]) real?]{Gets the given @racket[param] of the listener.}
-@defproc[(alGetListener3f [param
-exact-integer?]) (list/c real? real? real?)]{Gets the given @racket[param] of the listener.}
-@defproc[(alGetListenerfv [param
-exact-integer?]) (listof real?)]{Gets the given @racket[param] of the listener.}
-@defproc[(alGetListeneri [param exact-integer?]) exact-integer?]{Gets the given @racket[param] of the listener.}
-@defproc[(alGetListener3i [param
-exact-integer?]) (list/c exact-integer? exact-integer? exact-integer?)]{Gets the given @racket[param] of the listener.}
-@defproc[(alGetListeneriv [param
-exact-integer?]) (listof exact-integer?)]{Gets the given @racket[param] of the listener.}
+@defproc[(alListenerfv [param exact-integer?] [values (listof real?)]) any/c]{
+Sets the given @racket[param] of the listener to the given @racket[values].
+}
 
+@defproc[(alListeneri [param exact-integer?] [value exact-integer?]) any/c]{
+Sets the given @racket[param] of the listener to the given @racket[value].
+}
+
+@defproc[(alListener3i [param exact-integer?] [value1 exact-integer?]
+                       [value2 exact-integer?] [value3 exact-integer?]) any/c]{
+Sets the given @racket[param] of the listener to the given values.
+}
+
+@defproc[(alListeneriv [param exact-integer?] [values (listof exact-integer?)]) any/c]{
+Sets the given @racket[param] of the listener to the given @racket[values].
+}
+
+@defproc[(alGetListenerf [param exact-integer?]) real?]{
+Gets the given @racket[param] of the listener.
+}
+
+@defproc[(alGetListener3f [param exact-integer?])
+         (list/c real? real? real?)]{
+Gets the given @racket[param] of the listener.
+}
+
+@defproc[(alGetListenerfv [param exact-integer?])
+         (listof real?)]{
+Gets the given @racket[param] of the listener.
+}
+
+@defproc[(alGetListeneri [param exact-integer?]) exact-integer?]{
+Gets the given @racket[param] of the listener.
+}
+
+@defproc[(alGetListener3i [param exact-integer?])
+         (list/c exact-integer? exact-integer? exact-integer?)]{
+Gets the given @racket[param] of the listener.
+}
+
+@defproc[(alGetListeneriv [param exact-integer?])
+         (listof exact-integer?)]{
+Gets the given @racket[param] of the listener.
+}
 
 @subsection{Friendly listener getters and setters}
 

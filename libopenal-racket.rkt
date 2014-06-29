@@ -138,6 +138,13 @@
   ;  #:wrap (allocator)
   )
 
+(define/native open-capture-device
+  (_fun [devicename : _string]
+        [frequency : _int]
+        [format : _int]
+        [buffersize : _int] -> _pointer)
+  #:c-id alcCaptureOpenDevice)
+
 (define/native create-context
   (_fun [device : _pointer] [attrlist : _pointer = #f] -> _pointer)
   #:c-id alcCreateContext
@@ -428,6 +435,7 @@
         [numids : _int = (length buffers)]
         [buffers : (_list i _int)] -> _void)
   #:c-id alSourceQueueBuffers)
+
 (define/native source-unqueue-buffers!
   (_fun (sid buffers) ::
         [sid : _int]
@@ -438,6 +446,10 @@
 (define/native play-source
   (_fun [sid : _int] -> _void)
   #:c-id alSourcePlay)
+
+(define/native capture-start
+  (_fun [device : _pointer] -> _void)
+  #:c-id alcCaptureStart)
 
 (define/native rewind-source
   (_fun [sid : _int] -> _void)
@@ -451,6 +463,10 @@
   (_fun [sid : _int] -> _void)
   #:c-id alSourceStop)
 
+(define/native stop-capture
+  (_fun [device : _pointer] -> _void)
+  #:c-id alcCaptureStop)
+
 (define/native get-current-context
   (_fun -> [context : _pointer])
   #:c-id alcGetCurrentContext)
@@ -463,6 +479,9 @@
   (_fun [device : _pointer] -> _bool)
   #:c-id alcCloseDevice)
 
+(define/native close-capture-device!
+  (_fun [device : _pointer] -> _bool)
+  #:c-id alcCaptureCloseDevice)
 
 (define/native set-distance-model!
   (_fun [model : _int] -> _void)
@@ -475,6 +494,12 @@
 (define/native set-speed-of-sound!
   (_fun [value : _float] -> _void)
   #:c-id alSpeedOfSound)
+
+(define/native capture-samples
+  (_fun [device : _pointer]
+        [buffer : _bytes]
+        [samples : _int] -> _void)
+  #:c-id alcCaptureSamples)
 
 ;;;;;;;;;;;;;;;; "Lowish-level" Streaming API
 
