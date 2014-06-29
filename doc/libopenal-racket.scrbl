@@ -10,7 +10,8 @@
               "OpenAL Programmer's Guide"))
 
 @defmodule[libopenal-racket]{
-  This library provides low-level bindings for the OpenAL sound library.
+  @racketmodname[libopenal-racket] is a fork of @racket[(planet gcr/openal)].
+   This library provides low-level bindings for the OpenAL sound library.
   Because these bindings are low-level, you may want to look at the
   @openal-programmers-guide to get a sense of how it works.
 }
@@ -24,7 +25,7 @@ bytestring.
 
 @codeblock{
 #lang racket
-(require (planet gcr/openal))
+(require libopenal/racket)
 
 ;; Our sound data
 (define sinewave
@@ -115,10 +116,10 @@ First, we must dig out the spellbook and incant the OpenAL Summoning Mantra:
 
 @codeblock{
 #lang racket
-(require (planet gcr/openal)
+(require libopenal-racket
          (planet gcr/libvorbisfile))
 
-;; Initialize OpenAL (see the docs for (planet gcr/openal))
+;; Initialize OpenAL (see the docs for libopenal-racket)
 (define device (open-device #f))
 (define context (create-context device))
 (set-current-context context)
