@@ -280,9 +280,19 @@ Opens an OpenAL device. Pass @racket[#f] to just use the default device.
 
 @defproc[(open-capture-device [devicename (or/c string? #f)]
                               [frequency integer?]
-                              [format integer?]
+                              [format (or/c AL_FORMAT_MONO8
+                                            AL_FORMAT_MONO16
+                                            AL_FORMAT_STEREO8
+                                            AL_FORMAT_STEREO16)]
                               [buffersize integer?]) any/c]{
 Opens an OpenAL capture device. Pass @racket[#f] to just use the default device.
+
+@racket[frequency] is the frequency at which the device should record, usually
+44100.
+
+@racket[format] is the requested capture buffer format.
+
+@racket[buffersize] is the size of the capture buffer.
 }
 
 @defproc[(close-device! [device any/c]) boolean?]{
@@ -359,10 +369,10 @@ Returns whether @racket[buffer] is an OpenAL buffer.
 }
 
 @defproc[(buffer-data [bufid exact-integer?]
-                      [format (one-of/c AL_FORMAT_MONO8
-                                        AL_FORMAT_MONO16
-                                        AL_FORMAT_STEREO8
-                                        AL_FORMAT_STEREO16)]
+                      [format (or/c AL_FORMAT_MONO8
+                                    AL_FORMAT_MONO16
+                                    AL_FORMAT_STEREO8
+                                    AL_FORMAT_STEREO16)]
                       [data bytes?]
                       [frequency exact-integer?]) any/c]{
 Loads the data in @racket[data] to the given buffer with ID
@@ -651,15 +661,15 @@ Gets or sets the source's position, velocity, and direction in 3D space.
 }
 
 @deftogether[(
-  @defproc[(set-source-source-relative! [source exact-integer?] [value (one-of/c 0 1)]) any/c]
-  @defproc[(source-source-relative [source exact-integer?]) (one-of/c 0 1)]
+  @defproc[(set-source-source-relative! [source exact-integer?] [value (or/c 0 1)]) any/c]
+  @defproc[(source-source-relative [source exact-integer?]) (or/c 0 1)]
 )]{
 Sets whether the source's position is relative to the listener or an
 absolute position.
 }
 
 @deftogether[(
-  @defproc[(source-source-type [source exact-integer?]) (one-of/c
+  @defproc[(source-source-type [source exact-integer?]) (or/c
   AL_STATIC AL_STREAMING AL_UNDETERMINED)]
 )]{
 Returns the source's type -- @racket[AL_STATIC] for buffered sources,
@@ -668,8 +678,8 @@ Returns the source's type -- @racket[AL_STATIC] for buffered sources,
 }
 
 @deftogether[(
-  @defproc[(set-source-looping! [source exact-integer?] [value (one-of/c 0 1)]) any/c]
-  @defproc[(source-looping [source exact-integer?]) (one-of/c 0 1)]
+  @defproc[(set-source-looping! [source exact-integer?] [value (or/c 0 1)]) any/c]
+  @defproc[(source-looping [source exact-integer?]) (or/c 0 1)]
 )]{
 Gets or sets whether buffered sources should loop back to the
 beginning of the buffer upon completion. May misbehave on streaming sources.
@@ -688,8 +698,10 @@ however, clear any queued buffers by running
 
 }
 @deftogether[(
-  @defproc[(source-source-state [source exact-integer?]) (one-of/c
-  AL_STOPPED AL_PLAYING AL_PAUSED)]
+  @defproc[(source-source-state [source exact-integer?]) (or/c
+                                                          AL_STOPPED
+                                                          AL_PLAYING
+                                                          AL_PAUSED)]
 )]{
 Returns the state of a source. Use @racket[play-source],
 @racket[stop-source], @racket[pause-source] to change.
@@ -854,17 +866,16 @@ finished playing with @racket[source-buffers-processed].
 
 @defproc[(stream-port-to-source [port port?]
                                 [source exact-integer?]
-                                [format (one-of/c AL_FORMAT_MONO8
-                                        AL_FORMAT_MONO16
-                                        AL_FORMAT_STEREO8
-                                        AL_FORMAT_STEREO16)]
+                                [format (or/c AL_FORMAT_MONO8
+                                              AL_FORMAT_MONO16
+                                              AL_FORMAT_STEREO8
+                                              AL_FORMAT_STEREO16)]
                                 [frequency exact-integer?]
-                               [at-end-of-loop (-> boolean?) (λ() #f)]
-                               [num-buffers exact-integer? 5]
-                               [buffer-size exact-integer? (* 4096 8)]
-                               [poll-interval real? 0.1]
-                               [cleanup (-> any/c) (λ()(void))])
-         thread?]{
+                                [at-end-of-loop (-> boolean?) (λ() #f)]
+                                [num-buffers exact-integer? 5]
+                                [buffer-size exact-integer? (* 4096 8)]
+                                [poll-interval real? 0.1]
+                                [cleanup (-> any/c) (λ()(void))]) thread?]{
 Begins a background thread that streams the binary bytes from
 @racket[port] to the given OpenAL @racket[source]. This function does
 not block.
@@ -899,12 +910,12 @@ If you want to terminate the thread early, just run
 OpenAL defines several models that select how sound is attenuated
 (softened) over distance.
 
-@defproc[(set-distance-model! [model (one-of/c AL_INVERSE_DISTANCE
-AL_INVERSE_DISTANCE_CLAMPED
-AL_LINEAR_DISTANCE
-AL_LINEAR_DISTANCE_CLAMPED
-AL_EXPONENT_DISTANCE
-AL_EXPONENT_DISTANCE_CLAMPED)]) any/c]{
+@defproc[(set-distance-model! [model (or/c AL_INVERSE_DISTANCE
+                                           AL_INVERSE_DISTANCE_CLAMPED
+                                           AL_LINEAR_DISTANCE
+                                           AL_LINEAR_DISTANCE_CLAMPED
+                                           AL_EXPONENT_DISTANCE
+                                           AL_EXPONENT_DISTANCE_CLAMPED)]) any/c]{
 Sets the OpenAL distance model.
 
 According to the @openal-programmers-guide, the inverse distance model
