@@ -47,3 +47,9 @@
 (set-current-context #f)
 (destroy-context! context)
 (close-device! device)
+
+#|
+(define device (open-device #f))
+(open-capture-device device 44100 AL_FORMAT_STEREO16 400)
+(close-capture-device! device)
+|#
