@@ -50,6 +50,15 @@
 
 #|
 (define device (open-device #f))
-(open-capture-device device 44100 AL_FORMAT_STEREO16 400)
+(define context (create-context device))
+(define buffer (car (gen-buffers 1)))
+(define buf-size (buffer-size buffer))
+(define buf-freq (buffer-frequency buffer))
+(open-capture-device device buf-freq AL_FORMAT_STEREO16 buf-size)
+
+(capture-samples device buffer 1)
+
+(set-current-context #f)
+(destroy-context! context)
 (close-capture-device! device)
 |#
