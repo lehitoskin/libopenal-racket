@@ -447,13 +447,9 @@
   (_fun [sid : _int] -> _void)
   #:c-id alSourcePlay)
 
-(define/native capture-start
+(define/native start-capture
   (_fun [device : _pointer] -> _void)
   #:c-id alcCaptureStart)
-
-(define/native capture-stop
-  (_fun [device : _pointer] -> _void)
-  #:c-id alcCaptureStop)
 
 (define/native rewind-source
   (_fun [sid : _int] -> _void)

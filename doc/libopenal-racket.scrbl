@@ -330,11 +330,11 @@ using this without reinstating another device context.
 Returns (and clears) OpenAL's last error. Will be 0 if there are no errors.
 }
 
-@defproc[(capture-start [device any/c]) void?]{
+@defproc[(start-capture [device any/c]) void?]{
 Begin a capture operation using @racket[device].
 }
 
-@defproc[(capture-stop [device any/c]) void?]{
+@defproc[(stop-capture [device any/c]) void?]{
 Stop a capture operation on @racket[device].
 }
 
