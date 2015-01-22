@@ -443,6 +443,15 @@
         [buffers : (_list i _int)] -> _void)
   #:c-id alSourceUnqueueBuffers)
 
+(define/native source-unqueue-buffers!!
+  (_fun (sid numids buffers) ::
+        [sid : _int]
+        [numids : _int]
+        [buffers : (_list io _int numids)]
+        -> _void
+        -> buffers)
+  #:c-id alSourceUnqueueBuffers)
+
 (define/native play-source
   (_fun [sid : _int] -> _void)
   #:c-id alSourcePlay)
