@@ -1,6 +1,6 @@
 #lang racket
 ; test.rkt
-(require "main.rkt")
+(require "../main.rkt")
 
 ; In this example, we play an 8-bit sine wave generated from a bytestring.
 (define sinewave
@@ -28,9 +28,11 @@
 
 ;; Make our OpenAL source
 (define source (car (gen-sources 1)))
+(define albufs (make-list 1 1))
 
 ;; Bind our buffer to the source -- 8-bit mono
-(set-source-buffer! source buffer)
+(source-queue-buffers! source (list buffer))
+(source-unqueue-buffers!! source 1 albufs)
 
 ;; Loop forever (without this, the source will play just once and then stop)
 (set-source-looping! source AL_TRUE)

@@ -1,5 +1,5 @@
 #lang racket
-(require "main.rkt")
+(require "../main.rkt")
 
 (define device (open-device #f))
 (define context (create-context device))
