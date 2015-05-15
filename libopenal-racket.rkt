@@ -12,8 +12,12 @@
                      define-listener-prop
                      define-buffer-prop))
 
+(define libopenal-path
+        (if (equal? (system-type) 'macosx)
+            "System/Library/Frameworks/OpenAL.framework/OpenAL"
+            "libopenal"))
 (define libopenal
-  (ffi-lib "libopenal"))
+  (ffi-lib libopenal-path))
 
 (define-ffi-definer define/native libopenal)
 
