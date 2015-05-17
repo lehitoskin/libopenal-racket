@@ -10,12 +10,16 @@
                      define-source-prop
                      define-prop-definer
                      define-listener-prop
-                     define-buffer-prop))
+                     define-buffer-prop
+                     libopenal-path
+                     libopenal))
 
 (define libopenal-path
-        (if (equal? (system-type) 'macosx)
-            "System/Library/Frameworks/OpenAL.framework/OpenAL"
-            "libopenal"))
+  (cond [(equal? (system-type) 'macosx)
+         "System/Library/Frameworks/OpenAL.framework/OpenAL"]
+        [(equal? (system-type) 'unix) "libopenal"]
+        [(equal? (system-type) 'windows)
+         (format "OpenAL~a" (system-type 'word))]))
 (define libopenal
   (ffi-lib libopenal-path))
 
