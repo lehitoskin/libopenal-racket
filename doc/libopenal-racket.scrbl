@@ -2,7 +2,7 @@
 @(require (for-label racket)
           (for-label "../main.rkt"))
 
-@title{@bold{OpenAL}: Bindings for the OpenAL sound library}
+@title{OpenAL: Bindings for the OpenAL sound library}
 @author{gcr}
 
 @(define openal-programmers-guide
