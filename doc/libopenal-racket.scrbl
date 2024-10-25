@@ -25,7 +25,7 @@ bytestring.
 
 @codeblock{
 #lang racket
-(require libopenal/racket)
+(require libopenal-racket)
 
 ;; Our sound data
 (define sinewave
