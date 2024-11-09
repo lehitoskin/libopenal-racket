@@ -18,8 +18,7 @@
   (cond [(equal? (system-type) 'macosx)
          "System/Library/Frameworks/OpenAL.framework/OpenAL"]
         [(equal? (system-type) 'unix) "libopenal"]
-        [(equal? (system-type) 'windows)
-         (format "OpenAL~a" (system-type 'word))]))
+        [(equal? (system-type) 'windows) "OpenAL32"]))
 (define libopenal
   (ffi-lib libopenal-path))
 
