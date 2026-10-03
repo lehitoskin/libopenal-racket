@@ -7,3 +7,5 @@
 (define repositories '("4.x"))
 (define scribblings '(("doc/libopenal-racket.scrbl" ())))
 (define release-notes '((p "Fixed up provides, added documentation for libvorbisfile.")))
+(define deps '("base"))
+(define build-deps '("racket-doc"))
